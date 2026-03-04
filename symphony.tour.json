@@ -1,0 +1,264 @@
+{
+  "id": "symphony-onboarding",
+  "title": "Symphony: AI Agent Orchestration Platform",
+  "description": "A guided tour through Symphony's architecture — an Elixir/OTP platform that polls issue trackers, dispatches autonomous coding agents, and manages their lifecycle end-to-end.",
+  "version": "1.0.0",
+  "audience": "New Contributors & AI Assistants",
+  "prerequisites": [
+    "Basic understanding of Elixir/OTP",
+    "Familiarity with GenServer and supervision trees"
+  ],
+  "steps": [
+    {
+      "id": "step-1-overview",
+      "title": "Welcome to Symphony",
+      "description": "Symphony is an AI coding agent orchestration platform. Rather than manually supervising coding agents, teams define workflow policies once and Symphony autonomously dispatches agents to handle issues. The top level contains the specification (SPEC.md), CI workflows, and the Elixir reference implementation under elixir/.",
+      "estimatedTime": 60,
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "explore",
+          "description": "Browse the top-level project structure"
+        }
+      ]
+    },
+    {
+      "id": "step-2-orchestrator",
+      "title": "The Orchestrator — Heart of Symphony",
+      "description": "The Orchestrator is a long-running GenServer that owns the core polling loop and dispatch state. Every tick it polls the issue tracker for candidates, decides which to dispatch (respecting concurrency limits), spawns agent tasks, and manages state transitions including retries with exponential backoff. This is the largest and most critical module in the system.",
+      "estimatedTime": 120,
+      "focusDirectory": "elixir/lib/symphony_elixir",
+      "highlightLayers": [
+        {
+          "id": "orchestration-core",
+          "name": "Orchestration Core",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/orchestrator.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/agent_runner.ex", "type": "file" }
+          ],
+          "opacity": 0.8,
+          "borderWidth": 3,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "workspace-layer",
+          "name": "Workspace Isolation",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/workspace.ex", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 2,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open orchestrator.ex to see the polling loop and dispatch logic",
+          "target": "elixir/lib/symphony_elixir/orchestrator.ex"
+        }
+      ]
+    },
+    {
+      "id": "step-3-codex-integration",
+      "title": "Codex Integration — Running Agents",
+      "description": "Symphony communicates with Codex via JSON-RPC 2.0 over stdio. The AppServer module manages the full lifecycle: spawning Codex processes, streaming turn results, handling tool approvals, and collecting token usage. DynamicTool extends Codex with custom tool definitions that Symphony can inject at runtime.",
+      "estimatedTime": 90,
+      "focusDirectory": "elixir/lib/symphony_elixir/codex",
+      "highlightLayers": [
+        {
+          "id": "codex-layer",
+          "name": "Codex Client",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/codex", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 3,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open app_server.ex to see the JSON-RPC 2.0 protocol implementation",
+          "target": "elixir/lib/symphony_elixir/codex/app_server.ex"
+        }
+      ]
+    },
+    {
+      "id": "step-4-tracker",
+      "title": "Tracker Adapter — Linear Integration",
+      "description": "Symphony uses an adapter pattern for issue trackers. The Tracker behaviour defines the interface (fetch issues, post comments, transition states), and Linear.Adapter implements it with a full GraphQL client. A memory-based mock adapter enables deterministic testing. This design makes it straightforward to add new tracker backends.",
+      "estimatedTime": 90,
+      "focusDirectory": "elixir/lib/symphony_elixir",
+      "highlightLayers": [
+        {
+          "id": "tracker-interface",
+          "name": "Tracker Interface",
+          "color": "#10b981",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/tracker.ex", "type": "file" }
+          ],
+          "opacity": 0.8,
+          "borderWidth": 2,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "linear-impl",
+          "name": "Linear Implementation",
+          "color": "#6366f1",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/linear", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 3,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "hover-directory",
+          "description": "Hover over the linear/ directory to see the GraphQL client and adapter",
+          "target": "elixir/lib/symphony_elixir/linear"
+        }
+      ]
+    },
+    {
+      "id": "step-5-configuration",
+      "title": "Configuration & Workflow",
+      "description": "Symphony is configured via WORKFLOW.md — a Markdown file with YAML front matter that defines tracker settings, polling intervals, workspace paths, agent parameters, and a Liquid prompt template. The Config module parses this into a typed schema with defaults, env variable expansion, and validation. WorkflowStore holds reloadable state as a GenServer.",
+      "estimatedTime": 90,
+      "focusDirectory": "elixir/lib/symphony_elixir",
+      "highlightLayers": [
+        {
+          "id": "config-layer",
+          "name": "Configuration",
+          "color": "#f97316",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/config.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/workflow.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/workflow_store.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/prompt_builder.ex", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 2,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open config.ex to see the typed configuration schema",
+          "target": "elixir/lib/symphony_elixir/config.ex"
+        }
+      ]
+    },
+    {
+      "id": "step-6-observability",
+      "title": "Observability — Dashboard & HTTP API",
+      "description": "Symphony provides two observability surfaces. The StatusDashboard renders a rich terminal UI showing real-time agent status, token usage, queue state, and error counts. The HttpServer exposes a JSON API for remote monitoring and triggering workflow refreshes. Both are supervised GenServers in the OTP tree.",
+      "estimatedTime": 90,
+      "focusDirectory": "elixir/lib/symphony_elixir",
+      "highlightLayers": [
+        {
+          "id": "observability-layer",
+          "name": "Observability",
+          "color": "#ec4899",
+          "items": [
+            { "path": "elixir/lib/symphony_elixir/status_dashboard.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/http_server.ex", "type": "file" },
+            { "path": "elixir/lib/symphony_elixir/log_file.ex", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 2,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open status_dashboard.ex to see the terminal UI rendering",
+          "target": "elixir/lib/symphony_elixir/status_dashboard.ex"
+        }
+      ]
+    },
+    {
+      "id": "step-7-testing",
+      "title": "Testing — 100% Coverage Enforced",
+      "description": "Symphony enforces 100% test coverage via CI. The test suite includes unit tests for every module, snapshot tests for the dashboard UI, and a memory-based mock tracker for deterministic integration testing. The Makefile runs the full quality gate: format check, credo linting, test coverage, and dialyzer type analysis.",
+      "estimatedTime": 90,
+      "focusDirectory": "elixir/test",
+      "highlightLayers": [
+        {
+          "id": "test-support",
+          "name": "Test Infrastructure",
+          "color": "#14b8a6",
+          "items": [
+            { "path": "elixir/test/support", "type": "directory" },
+            { "path": "elixir/test/fixtures", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "borderWidth": 2,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "explore",
+          "description": "Browse the test directory to see coverage across all modules"
+        }
+      ]
+    },
+    {
+      "id": "step-8-full-picture",
+      "title": "The Full Picture",
+      "description": "You've now seen Symphony's core architecture: the Orchestrator polling loop, Codex agent integration, Linear tracker adapter, WORKFLOW.md configuration, observability dashboards, and the test suite. The OTP supervision tree ties it all together — TaskSupervisor, WorkflowStore, Orchestrator, HttpServer, and StatusDashboard all run under a single supervisor. Explore freely!",
+      "estimatedTime": 60,
+      "focusDirectory": "",
+      "colorMode": "fileTypes",
+      "interactiveActions": [
+        {
+          "type": "explore",
+          "description": "Freely explore the full codebase"
+        }
+      ],
+      "resources": [
+        {
+          "title": "Symphony Specification",
+          "url": "SPEC.md",
+          "type": "documentation"
+        },
+        {
+          "title": "Elixir Implementation README",
+          "url": "elixir/README.md",
+          "type": "documentation"
+        },
+        {
+          "title": "Development Conventions",
+          "url": "elixir/AGENTS.md",
+          "type": "documentation"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Claude",
+    "createdAt": "2026-03-04",
+    "tags": [
+      "onboarding",
+      "architecture",
+      "elixir",
+      "otp",
+      "orchestration"
+    ]
+  }
+}
